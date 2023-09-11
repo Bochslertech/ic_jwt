@@ -67,6 +67,20 @@ impl JWTService {
         }
     }
 
+    /// Set the jwt_secret
+    pub fn set_jwt_secret(&mut self, new_secret: String) {
+        if self.owner == caller() {
+            self.jwt_secret = new_secret
+        }
+    }
+
+    /// Set the canister owner
+    pub fn set_owner(&mut self, new_owner: Principal) {
+        if self.owner == caller() {
+            self.owner = new_owner
+        }
+    }
+
     /// Return the canister owner
     pub fn get_owner(&self) -> Principal {
         self.owner

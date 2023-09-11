@@ -20,10 +20,22 @@ fn generate_jwt() -> String {
     SERVICE.with(|service| service.borrow_mut().generate_jwt())
 }
 
+#[update]
+#[candid::candid_method(update)]
+fn set_jwt_secret(new_secret: String) -> () {
+    SERVICE.with(|service| service.borrow_mut().set_jwt_secret(new_secret))
+}
+
 #[query]
 #[candid::candid_method(query)]
 fn get_user_jwt(user: Principal) -> Result<String, String> {
     SERVICE.with(|service| service.borrow().get_user_jwt(user))
+}
+
+#[update]
+#[candid::candid_method(update)]
+fn set_owner(new_owner: Principal) -> () {
+    SERVICE.with(|service| service.borrow_mut().set_owner(new_owner))
 }
 
 #[query]
