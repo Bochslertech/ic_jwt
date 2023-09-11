@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "canisters": {
+    "ic_jwt_backend": {
+      "type": "rust",
+      "package": "ic_jwt_backend",
+      "candid": "src/ic_jwt_backend/ic_jwt_backend.did"
+    },
+    "ic_jwt_frontend": {
+      "type": "assets",
+      "source": [
+        "src/ic_jwt_frontend/assets"
+      ],
+      "dependencies": [
+        "ic_jwt_backend"
+      ]
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "",
+      "args": ""
+    }
+  },
+  "output_env_file": ".env"
+}
