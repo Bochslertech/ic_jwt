@@ -1,0 +1,8 @@
+type JWTServiceStorage = record { owner : principal; jwt_secret : text };
+type Result = variant { Ok : text; Err : text };
+service : (JWTServiceStorage) -> {
+  generate_jwt : () -> (text);
+  get_jwt_secret : () -> (text) query;
+  get_owner : () -> (principal) query;
+  get_user_jwt : (principal) -> (Result) query;
+}
