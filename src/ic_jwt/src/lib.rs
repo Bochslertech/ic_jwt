@@ -3,12 +3,13 @@ mod init;
 mod service;
 mod types;
 
-use candid::Principal;
-
 use crate::service::JWTService;
 use crate::types::JWTServiceStorage;
-use ic_cdk_macros::{query, update};
+use candid::Principal;
+use ic_cdk::storage;
+use ic_cdk_macros::{post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;
+use std::mem;
 
 thread_local! {
     static SERVICE: RefCell<JWTService> = RefCell::default();
@@ -48,6 +49,25 @@ fn get_owner() -> Principal {
 #[candid::candid_method(query)]
 fn get_jwt_secret() -> Result<String, String> {
     SERVICE.with(|service| service.borrow().get_jwt_secret())
+}
+
+#[pre_upgrade]
+fn pre_upgrade() {
+    let service: JWTService = SERVICE.with(|service| mem::take(&mut *service.borrow_mut()));
+    // Transform into stable service
+    let stable_service: types::StableService = service.into();
+    storage::stable_save((stable_service,)).unwrap();
+}
+#[post_upgrade]
+fn post_upgrade() {
+    let (stable_service,): (types::StableService,) =
+        ic_cdk::storage::stable_restore().expect("failed to restore stable service");
+
+    // Transform from stable service
+    let service = stable_service.into();
+    SERVICE.with(|s| {
+        s.replace(service);
+    });
 }
 
 candid::export_service!();

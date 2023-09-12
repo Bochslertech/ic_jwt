@@ -5,7 +5,9 @@ echo $ADMIN_PRINCIPAL
 echo $ADMIN_ACCOUNTID
 echo $TEST_PRINCIPAL
 
-dfx deploy ic_jwt --argument "(record { owner = principal \"$ADMIN_PRINCIPAL\"; jwt_secret = \"some_secret\" })" --mode reinstall
+# dfx deploy ic_jwt --argument "(record { owner = principal \"$ADMIN_PRINCIPAL\"; jwt_secret = \"some_secret\" })" --mode reinstall
+
+dfx deploy ic_jwt --argument "(record { owner = principal \"$ADMIN_PRINCIPAL\"; jwt_secret = \"some_secret\" })"
 
 dfx canister call aax3a-h4aaa-aaaaa-qaahq-cai generate_jwt
 
