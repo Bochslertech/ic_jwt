@@ -43,8 +43,8 @@ impl From<JWTServiceStorage> for JWTService {
 impl JWTService {
     pub fn generate_jwt(&mut self) -> String {
         let caller_user: String = caller().to_text();
-        let key: Hmac<Sha256> = Hmac::new_from_slice(b"some-secret").unwrap();
-        let exp_at: String = (self.env.now_secs() + (1000 * 60 * 60 * 24 * 7)).to_string();
+        let key: Hmac<Sha256> = Hmac::new_from_slice(self.jwt_secret.as_bytes()).unwrap();
+        let exp_at: String = (self.env.now_secs() + (60 * 60 * 24 * 7)).to_string();
         let mut claims: BTreeMap<&str, &str> = BTreeMap::new();
         claims.insert("sub", "canister login");
         claims.insert("iss", &caller_user);
