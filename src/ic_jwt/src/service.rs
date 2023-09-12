@@ -68,16 +68,22 @@ impl JWTService {
     }
 
     /// Set the jwt_secret
-    pub fn set_jwt_secret(&mut self, new_secret: String) {
+    pub fn set_jwt_secret(&mut self, new_secret: String) -> Result<String, String> {
         if self.owner == caller() {
-            self.jwt_secret = new_secret
+            self.jwt_secret = new_secret.clone();
+            Ok(new_secret)
+        } else {
+            Err(String::from("caller error"))
         }
     }
 
     /// Set the canister owner
-    pub fn set_owner(&mut self, new_owner: Principal) {
+    pub fn set_owner(&mut self, new_owner: Principal) -> Result<String, String> {
         if self.owner == caller() {
-            self.owner = new_owner
+            self.owner = new_owner;
+            Ok(new_owner.to_string())
+        } else {
+            Err(String::from("caller error"))
         }
     }
 

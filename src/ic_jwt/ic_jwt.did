@@ -5,6 +5,6 @@ service : (JWTServiceStorage) -> {
   get_jwt_secret : () -> (Result) query;
   get_owner : () -> (principal) query;
   get_user_jwt : (principal) -> (Result) query;
-  set_jwt_secret : (text) -> ();
-  set_owner : (principal) -> ();
+  set_jwt_secret : (text) -> (Result);
+  set_owner : (principal) -> (Result);
 }
