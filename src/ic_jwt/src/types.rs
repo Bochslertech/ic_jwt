@@ -8,7 +8,7 @@ use crate::service::JWTService;
 
 #[derive(CandidType, Deserialize)]
 pub struct StableService {
-    jwt_users: HashMap<Principal, String>,
+    jwt_users: HashMap<Principal, UserJWT>,
     owner: Principal,
     jwt_secret: String,
 }
@@ -44,4 +44,10 @@ pub struct JWTServiceStorage {
 pub struct Account {
     pub owner: Principal,
     pub jwt_token: String,
+}
+
+#[derive(Clone, Debug, CandidType, Deserialize)]
+pub struct UserJWT {
+    pub token: String,
+    pub token_exp: u64,
 }
