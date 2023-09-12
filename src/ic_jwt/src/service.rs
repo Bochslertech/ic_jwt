@@ -4,9 +4,8 @@ use crate::types::JWTServiceStorage;
 use candid::Principal;
 use hmac::{Hmac, Mac};
 use ic_cdk::caller;
-use jwt::SignWithKey;
+use jwt::{Claims, SignWithKey};
 use sha2::Sha256;
-use std::collections::BTreeMap;
 use std::collections::HashMap;
 
 /// Implements the JWTService interface
@@ -44,11 +43,11 @@ impl JWTService {
     pub fn generate_jwt(&mut self) -> String {
         let caller_user: String = caller().to_text();
         let key: Hmac<Sha256> = Hmac::new_from_slice(self.jwt_secret.as_bytes()).unwrap();
-        let exp_at: String = (self.env.now_secs() + (60 * 60 * 24 * 7)).to_string();
-        let mut claims: BTreeMap<&str, &str> = BTreeMap::new();
-        claims.insert("sub", "canister login");
-        claims.insert("iss", &caller_user);
-        claims.insert("exp", &exp_at);
+        let exp_at: u64 = self.env.now_secs() + (60 * 60 * 24 * 7);
+        let mut claims: Claims = Default::default();
+        claims.registered.issuer = Some(caller_user);
+        claims.registered.expiration = Some(exp_at);
+        claims.registered.subject = Some("canister login".into());
         let token_str = claims.sign_with_key(&key).unwrap();
         self.jwt_users.insert(caller(), token_str.clone());
         return token_str;
