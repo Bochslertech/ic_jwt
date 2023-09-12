@@ -1,5 +1,5 @@
 use crate::env::{EmptyEnvironment, Environment};
-use crate::types::JWTServiceStorage;
+use crate::types::{JWTServiceStorage, UserJWT};
 
 use candid::Principal;
 use hmac::{Hmac, Mac};
@@ -8,10 +8,13 @@ use jwt::{Claims, SignWithKey};
 use sha2::Sha256;
 use std::collections::HashMap;
 
+const VALIDITY_PERIOD: u64 = 60 * 60 * 24 * 7;
+const CACHE_PERIOD: u64 = 60 * 60 * 24;
+
 /// Implements the JWTService interface
 pub struct JWTService {
     pub env: Box<dyn Environment>,
-    pub jwt_users: HashMap<Principal, String>,
+    pub jwt_users: HashMap<Principal, UserJWT>,
     pub owner: Principal,
     pub jwt_secret: String,
 }
@@ -42,14 +45,26 @@ impl From<JWTServiceStorage> for JWTService {
 impl JWTService {
     pub fn generate_jwt(&mut self) -> String {
         let caller_user: String = caller().to_text();
+
+        // find old jwt token
+        if let Some(jwt_token) = self.jwt_users.get(&caller()) {
+            if jwt_token.token_exp > self.env.now_secs() + CACHE_PERIOD {
+                return jwt_token.token.clone();
+            }
+        }
+
         let key: Hmac<Sha256> = Hmac::new_from_slice(self.jwt_secret.as_bytes()).unwrap();
-        let exp_at: u64 = self.env.now_secs() + (60 * 60 * 24 * 7);
+        let exp_at: u64 = self.env.now_secs() + VALIDITY_PERIOD;
         let mut claims: Claims = Default::default();
         claims.registered.issuer = Some(caller_user);
         claims.registered.expiration = Some(exp_at);
         claims.registered.subject = Some("canister login".into());
         let token_str = claims.sign_with_key(&key).unwrap();
-        self.jwt_users.insert(caller(), token_str.clone());
+        let user_jwt: UserJWT = UserJWT {
+            token: token_str.clone(),
+            token_exp: exp_at,
+        };
+        self.jwt_users.insert(caller(), user_jwt);
         return token_str;
     }
 
@@ -60,7 +75,7 @@ impl JWTService {
                 .jwt_users
                 .get(&user_principal)
                 .ok_or_else(|| format!("No jwt with principal {} exists", user_principal))?;
-            Ok(jwt_token.clone())
+            Ok(jwt_token.token.clone())
         } else {
             Err(String::from("caller error"))
         }
