@@ -6,7 +6,7 @@ mod types;
 use crate::service::JWTService;
 use crate::types::JWTServiceStorage;
 use candid::Principal;
-use ic_cdk::{storage, caller};
+use ic_cdk::{caller, storage};
 use ic_cdk_macros::{post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;
 use std::mem;
@@ -19,6 +19,12 @@ thread_local! {
 #[candid::candid_method(update)]
 fn generate_jwt() -> String {
     SERVICE.with(|service| service.borrow_mut().generate_jwt())
+}
+
+#[query]
+#[candid::candid_method(query)]
+fn get_my_jwt() -> Result<String, String> {
+    SERVICE.with(|service| service.borrow().get_my_jwt())
 }
 
 #[update(guard = "caller_is_owner")]
@@ -82,10 +88,7 @@ pub fn caller_is_owner() -> Result<(), String> {
     if caller == owner {
         Ok(())
     } else {
-        Err(format!(
-            "Caller ({}) is not a owner of the system.",
-            caller
-        ))
+        Err(format!("Caller ({}) is not a owner of the system.", caller))
     }
 }
 
