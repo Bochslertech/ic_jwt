@@ -9,7 +9,6 @@ use sha2::Sha256;
 use std::collections::HashMap;
 
 const VALIDITY_PERIOD: u64 = 60 * 60 * 24 * 7;
-const CACHE_PERIOD: u64 = 60 * 60 * 24;
 
 /// Implements the JWTService interface
 pub struct JWTService {
@@ -45,14 +44,6 @@ impl From<JWTServiceStorage> for JWTService {
 impl JWTService {
     pub fn generate_jwt(&mut self) -> String {
         let caller_user: String = caller().to_text();
-
-        // find old jwt token
-        if let Some(jwt_token) = self.jwt_users.get(&caller()) {
-            if jwt_token.token_exp > self.env.now_secs() + CACHE_PERIOD {
-                return jwt_token.token.clone();
-            }
-        }
-
         let key: Hmac<Sha256> = Hmac::new_from_slice(self.jwt_secret.as_bytes()).unwrap();
         let exp_at: u64 = self.env.now_secs() + VALIDITY_PERIOD;
         let mut claims: Claims = Default::default();
@@ -66,6 +57,20 @@ impl JWTService {
         };
         self.jwt_users.insert(caller(), user_jwt);
         return token_str;
+    }
+
+    /// Return the user JWT, if one exists
+    pub fn get_my_jwt(&self) -> Result<String, String> {
+        let caller_user = caller();
+        let jwt_token = self
+            .jwt_users
+            .get(&caller_user)
+            .ok_or_else(|| format!("No jwt with principal {} exists", caller_user))?;
+        if jwt_token.token_exp > self.env.now_secs() {
+            Err("jwt token has expired".into())
+        } else {
+            Ok(jwt_token.token.clone())
+        }
     }
 
     /// Return the user JWT, if one exists

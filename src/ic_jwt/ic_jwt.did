@@ -3,6 +3,7 @@ type Result = variant { Ok : text; Err : text };
 service : (JWTServiceStorage) -> {
   generate_jwt : () -> (text);
   get_jwt_secret : () -> (Result) query;
+  get_my_jwt : () -> (Result) query;
   get_owner : () -> (principal) query;
   get_user_jwt : (principal) -> (Result) query;
   set_jwt_secret : (text) -> (Result);
