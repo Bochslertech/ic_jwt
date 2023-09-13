@@ -6,7 +6,7 @@ mod types;
 use crate::service::JWTService;
 use crate::types::JWTServiceStorage;
 use candid::Principal;
-use ic_cdk::storage;
+use ic_cdk::{storage, caller};
 use ic_cdk_macros::{post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;
 use std::mem;
@@ -21,19 +21,19 @@ fn generate_jwt() -> String {
     SERVICE.with(|service| service.borrow_mut().generate_jwt())
 }
 
-#[update]
+#[update(guard = "caller_is_owner")]
 #[candid::candid_method(update)]
 fn set_jwt_secret(new_secret: String) -> Result<String, String> {
     SERVICE.with(|service| service.borrow_mut().set_jwt_secret(new_secret))
 }
 
-#[query]
+#[query(guard = "caller_is_owner")]
 #[candid::candid_method(query)]
 fn get_user_jwt(user: Principal) -> Result<String, String> {
     SERVICE.with(|service| service.borrow().get_user_jwt(user))
 }
 
-#[update]
+#[update(guard = "caller_is_owner")]
 #[candid::candid_method(update)]
 fn set_owner(new_owner: Principal) -> Result<String, String> {
     SERVICE.with(|service| service.borrow_mut().set_owner(new_owner))
@@ -45,7 +45,7 @@ fn get_owner() -> Principal {
     SERVICE.with(|service| service.borrow().get_owner())
 }
 
-#[query]
+#[query(guard = "caller_is_owner")]
 #[candid::candid_method(query)]
 fn get_jwt_secret() -> Result<String, String> {
     SERVICE.with(|service| service.borrow().get_jwt_secret())
@@ -74,6 +74,19 @@ candid::export_service!();
 #[query(name = "__get_candid_interface_tmp_hack")]
 fn export_candid() -> String {
     __export_service()
+}
+
+pub fn caller_is_owner() -> Result<(), String> {
+    let caller: Principal = caller();
+    let owner: Principal = SERVICE.with(|service| service.borrow().get_owner());
+    if caller == owner {
+        Ok(())
+    } else {
+        Err(format!(
+            "Caller ({}) is not a owner of the system.",
+            caller
+        ))
+    }
 }
 
 #[cfg(test)]

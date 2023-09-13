@@ -70,35 +70,23 @@ impl JWTService {
 
     /// Return the user JWT, if one exists
     pub fn get_user_jwt(&self, user_principal: Principal) -> Result<String, String> {
-        if self.owner == caller() {
-            let jwt_token = self
-                .jwt_users
-                .get(&user_principal)
-                .ok_or_else(|| format!("No jwt with principal {} exists", user_principal))?;
-            Ok(jwt_token.token.clone())
-        } else {
-            Err(String::from("caller error"))
-        }
+        let jwt_token = self
+            .jwt_users
+            .get(&user_principal)
+            .ok_or_else(|| format!("No jwt with principal {} exists", user_principal))?;
+        Ok(jwt_token.token.clone())
     }
 
     /// Set the jwt_secret
     pub fn set_jwt_secret(&mut self, new_secret: String) -> Result<String, String> {
-        if self.owner == caller() {
-            self.jwt_secret = new_secret.clone();
-            Ok(new_secret)
-        } else {
-            Err(String::from("caller error"))
-        }
+        self.jwt_secret = new_secret.clone();
+        Ok(new_secret)
     }
 
     /// Set the canister owner
     pub fn set_owner(&mut self, new_owner: Principal) -> Result<String, String> {
-        if self.owner == caller() {
-            self.owner = new_owner;
-            Ok(new_owner.to_string())
-        } else {
-            Err(String::from("caller error"))
-        }
+        self.owner = new_owner;
+        Ok(new_owner.to_string())
     }
 
     /// Return the canister owner
@@ -106,11 +94,8 @@ impl JWTService {
         self.owner
     }
 
+    /// Return the jwt secret
     pub fn get_jwt_secret(&self) -> Result<String, String> {
-        if self.owner == caller() {
-            Ok(self.jwt_secret.clone())
-        } else {
-            Err(String::from("caller error"))
-        }
+        Ok(self.jwt_secret.clone())
     }
 }
