@@ -9,6 +9,7 @@ use sha2::Sha256;
 use std::collections::HashMap;
 
 const VALIDITY_PERIOD: u64 = 60 * 60 * 24 * 7;
+const CACHE_PERIOD: u64 = 60 * 60 * 24;
 
 /// Implements the JWTService interface
 pub struct JWTService {
@@ -44,6 +45,15 @@ impl From<JWTServiceStorage> for JWTService {
 impl JWTService {
     pub fn generate_jwt(&mut self) -> String {
         let caller_user: String = caller().to_text();
+
+        // find old jwt token
+        if let Some(jwt_token) = self.jwt_users.get(&caller()) {
+            let token_create_at: u64 = jwt_token.token_exp - VALIDITY_PERIOD;
+            if self.env.now_secs() - token_create_at < CACHE_PERIOD {
+                return jwt_token.token.clone();
+            }
+        }
+
         let key: Hmac<Sha256> = Hmac::new_from_slice(self.jwt_secret.as_bytes()).unwrap();
         let exp_at: u64 = self.env.now_secs() + VALIDITY_PERIOD;
         let mut claims: Claims = Default::default();
