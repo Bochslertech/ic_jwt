@@ -4,7 +4,7 @@ mod service;
 mod types;
 
 use crate::service::JWTService;
-use crate::types::JWTServiceStorage;
+use crate::types::{JWTServiceStorage, UserJWT};
 use candid::Principal;
 use ic_cdk::{caller, storage};
 use ic_cdk_macros::{post_upgrade, pre_upgrade, query, update};
@@ -23,7 +23,7 @@ fn generate_jwt() -> String {
 
 #[query]
 #[candid::candid_method(query)]
-fn get_my_jwt() -> Result<String, String> {
+fn get_my_jwt() -> Result<UserJWT, String> {
     SERVICE.with(|service| service.borrow().get_my_jwt())
 }
 

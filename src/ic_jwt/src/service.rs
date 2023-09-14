@@ -70,7 +70,7 @@ impl JWTService {
     }
 
     /// Return the user JWT, if one exists
-    pub fn get_my_jwt(&self) -> Result<String, String> {
+    pub fn get_my_jwt(&self) -> Result<UserJWT, String> {
         let caller_user = caller();
         let jwt_token = self
             .jwt_users
@@ -79,7 +79,7 @@ impl JWTService {
         if jwt_token.token_exp > self.env.now_secs() {
             Err("jwt token has expired".into())
         } else {
-            Ok(jwt_token.token.clone())
+            Ok(jwt_token.clone())
         }
     }
 
