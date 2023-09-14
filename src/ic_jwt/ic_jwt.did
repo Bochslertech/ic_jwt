@@ -1,9 +1,11 @@
 type JWTServiceStorage = record { owner : principal; jwt_secret : text };
 type Result = variant { Ok : text; Err : text };
+type Result_1 = variant { Ok : UserJWT; Err : text };
+type UserJWT = record { token : text; token_exp : nat64 };
 service : (JWTServiceStorage) -> {
   generate_jwt : () -> (text);
   get_jwt_secret : () -> (Result) query;
-  get_my_jwt : () -> (Result) query;
+  get_my_jwt : () -> (Result_1) query;
   get_owner : () -> (principal) query;
   get_user_jwt : (principal) -> (Result) query;
   set_jwt_secret : (text) -> (Result);
