@@ -1,3 +1,4 @@
+mod common;
 mod env;
 mod init;
 mod service;
@@ -5,7 +6,7 @@ mod types;
 mod utils;
 
 use crate::service::JWTService;
-use crate::types::{JWTServiceStorage, UserJWT};
+use crate::types::{JWTServiceStorage, UserJWT, WalletReceiveResult};
 use candid::Principal;
 use ic_cdk_macros::{post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;

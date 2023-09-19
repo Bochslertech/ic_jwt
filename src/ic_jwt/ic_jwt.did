@@ -2,6 +2,7 @@ type JWTServiceStorage = record { owner : principal; jwt_secret : text };
 type Result = variant { Ok : text; Err : text };
 type Result_1 = variant { Ok : UserJWT; Err : text };
 type UserJWT = record { token : text; token_exp : nat64 };
+type WalletReceiveResult = record { accepted : nat64 };
 service : (JWTServiceStorage) -> {
   generate_jwt : () -> (text);
   get_jwt_secret : () -> (Result) query;
@@ -10,4 +11,6 @@ service : (JWTServiceStorage) -> {
   get_user_jwt : (principal) -> (Result) query;
   set_jwt_secret : (text) -> (Result);
   set_owner : (principal) -> (Result);
+  wallet_balance : () -> (nat) query;
+  wallet_receive : () -> (WalletReceiveResult);
 }
