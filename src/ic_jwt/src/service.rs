@@ -76,7 +76,7 @@ impl JWTService {
             .jwt_users
             .get(&caller_user)
             .ok_or_else(|| format!("No jwt with principal {} exists", caller_user))?;
-        if jwt_token.token_exp > self.env.now_secs() {
+        if jwt_token.token_exp < self.env.now_secs() {
             Err("jwt token has expired".into())
         } else {
             Ok(jwt_token.clone())
