@@ -1,21 +1,23 @@
+mod common;
 mod env;
 mod init;
 mod service;
 mod types;
+mod utils;
 
 use crate::service::JWTService;
-use crate::types::{JWTServiceStorage, UserJWT};
+use crate::types::{JWTServiceStorage, UserJWT, WalletReceiveResult};
 use candid::Principal;
-use ic_cdk::{caller, storage};
 use ic_cdk_macros::{post_upgrade, pre_upgrade, query, update};
 use std::cell::RefCell;
 use std::mem;
+use utils::caller_is_not_anonymous;
 
 thread_local! {
     static SERVICE: RefCell<JWTService> = RefCell::default();
 }
 
-#[update]
+#[update(guard = "caller_is_not_anonymous")]
 #[candid::candid_method(update)]
 fn generate_jwt() -> String {
     SERVICE.with(|service| service.borrow_mut().generate_jwt())
@@ -62,7 +64,7 @@ fn pre_upgrade() {
     let service: JWTService = SERVICE.with(|service| mem::take(&mut *service.borrow_mut()));
     // Transform into stable service
     let stable_service: types::StableService = service.into();
-    storage::stable_save((stable_service,)).unwrap();
+    ic_cdk::storage::stable_save((stable_service,)).unwrap();
 }
 #[post_upgrade]
 fn post_upgrade() {
@@ -76,20 +78,20 @@ fn post_upgrade() {
     });
 }
 
-candid::export_service!();
-#[query(name = "__get_candid_interface_tmp_hack")]
-fn export_candid() -> String {
-    __export_service()
-}
-
 pub fn caller_is_owner() -> Result<(), String> {
-    let caller: Principal = caller();
+    let caller: Principal = ic_cdk::caller();
     let owner: Principal = SERVICE.with(|service| service.borrow().get_owner());
     if caller == owner {
         Ok(())
     } else {
         Err(format!("Caller ({}) is not a owner of the system.", caller))
     }
+}
+
+candid::export_service!();
+#[query(name = "__get_candid_interface_tmp_hack")]
+fn export_candid() -> String {
+    __export_service()
 }
 
 #[cfg(test)]
