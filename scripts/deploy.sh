@@ -9,7 +9,9 @@ echo $TEST_PRINCIPAL
 
 dfx deploy ic_jwt --argument "(record { owner = principal \"$ADMIN_PRINCIPAL\"; jwt_secret = \"some_secret\" })"
 
-dfx canister call aax3a-h4aaa-aaaaa-qaahq-cai generate_jwt
+dfx canister call be2us-64aaa-aaaaa-qaabq-cai generate_jwt
+
+dfx canister call be2us-64aaa-aaaaa-qaabq-cai get_my_jwt
 
 dfx canister call aax3a-h4aaa-aaaaa-qaahq-cai get_user_jwt '(principal "3yyxm-t5fpe-v32em-ac6lr-xyort-wuscb-dvl4x-3wnwi-hqkyj-xortw-oqe")'
 
