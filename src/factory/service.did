@@ -1,0 +1,1 @@
+service : { create_ic_jwt : (principal, text) -> (principal) }

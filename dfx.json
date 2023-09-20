@@ -5,6 +5,11 @@
       "type": "rust",
       "package": "ic_jwt",
       "candid": "src/ic_jwt/ic_jwt.did"
+    },
+    "factory": {
+      "type": "custom",
+      "candid": "src/factory/service.did",
+      "wasm": "target/wasm32-unknown-unknown/release/factory.wasm.gz"
     }
   },
   "defaults": {
