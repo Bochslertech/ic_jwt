@@ -52,7 +52,7 @@ pub struct UserJWT {
     pub token_exp: u64,
 }
 
-#[derive(candid::CandidType, candid::Deserialize, Debug)]
+#[derive(Clone, Debug, CandidType, Deserialize)]
 pub struct WalletReceiveResult {
     pub accepted: u64,
 }
